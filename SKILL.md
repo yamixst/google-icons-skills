@@ -19,6 +19,11 @@ Supported download formats:
 - **Android Compose**: Kotlin `ImageVector` source file
 - **Apple**: SVG asset suitable for Apple platform workflows
 
+Supported variable font axes:
+- **Fill**: `0` for outlined, `1` for filled
+- **Weight**: `100` to `700`
+- **Grade**: `-25` to `200`
+
 The script works on **Linux, macOS, and Windows**.
 
 ## Quick Start
@@ -35,7 +40,7 @@ python scripts/download_icon.py --name home --output app/src/main/res/drawable/i
 
 ### Download a Compose Icon
 ```bash
-python scripts/download_icon.py --name toggle_on --style sharp --format compose --output ToggleOn.kt
+python scripts/download_icon.py --name toggle_on --style sharp --format compose --fill 1 --weight 700 --grade 200 --output ToggleOn.kt
 ```
 
 ### Download an Apple SVG
@@ -52,6 +57,9 @@ python scripts/download_icon.py --name toggle_on --style sharp --format apple --
 | `--style` | `-s` | Icon style: `outlined`, `rounded`, `sharp` | `outlined` |
 | `--size` | `-sz` | Size in px: `18`, `20`, `24`, `36`, `48` | `24` |
 | `--format` | `-f` | Output format: `xml`, `compose`, `apple` | `xml` |
+| `--fill` | - | Fill axis: `0` or `1` | `0` |
+| `--weight` | - | Weight axis: `100` to `700` | `400` |
+| `--grade` | - | Grade axis: `-25` to `200` | `0` |
 | `--output` | `-o` | Output file path (default: `ic_<name>.<ext>`) | `./ic_<name>.<ext>` |
 | `--refresh` | - | Force refresh metadata cache | `False` |
 
@@ -78,10 +86,13 @@ python scripts/download_icon.py --name settings --style rounded --output app/src
 # Sharp style with custom size
 python scripts/download_icon.py --name delete --style sharp --size 48 --output app/src/main/res/drawable/ic_delete_48.xml
 
-# Android Compose Kotlin source
-python scripts/download_icon.py --name toggle_on --style sharp --format compose --output app/src/main/java/icons/ToggleOn.kt
+# Filled heavy XML variant
+python scripts/download_icon.py --name toggle_on --style sharp --fill 1 --weight 700 --grade 200 --output app/src/main/res/drawable/ic_toggle_on_filled.xml
 
-# Apple SVG asset
+# Android Compose Kotlin source
+python scripts/download_icon.py --name toggle_on --style sharp --format compose --fill 1 --weight 700 --grade 200 --output app/src/main/java/icons/ToggleOn.kt
+
+# Apple SVG asset (default axes only)
 python scripts/download_icon.py --name toggle_on --style sharp --format apple --output Assets/toggle_on.svg
 ```
 
@@ -142,9 +153,10 @@ When downloading icons:
 
 - The script caches metadata in the system temporary directory for faster subsequent searches
 - Metadata is fetched from `http://fonts.google.com/metadata/icons`
-- XML icons are downloaded from `https://fonts.gstatic.com/s/i/short-term/release/{style}/{icon}/default/{size}px.xml`
+- XML icons use the default Google asset URL for default axes and switch to the `render/v1` endpoint for custom `fill`, `weight`, or `grade`
 - Compose icons are downloaded from `https://fonts.gstatic.com/render/v1/Material+Symbols+{Style}/{size}dp/{icon}.kt?...`
 - Apple SVG icons are downloaded from `https://fonts.gstatic.com/s/i/short-term/release/{style}/{icon}/default/{size}px.svg`
+- Apple SVG currently supports only the default Google asset, so custom `--fill`, `--weight`, and `--grade` are rejected for that format
 - The script uses only Python standard library modules and is portable across Linux, macOS, and Windows
 
 ## URL Pattern
@@ -152,6 +164,7 @@ When downloading icons:
 Icons are downloaded using these patterns:
 ```
 https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/default/{size}px.xml
+https://fonts.gstatic.com/render/v1/{compose_family}/{size}dp/{icon_name}.xml?var=opsz,wght,FILL,GRAD,ROND@{size},{weight},{fill},{grade},50
 https://fonts.gstatic.com/render/v1/{compose_family}/{size}dp/{icon_name}.kt?var=opsz,wght,FILL,GRAD,ROND@{size},400,0,0,50
 https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/default/{size}px.svg
 ```

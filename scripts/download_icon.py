@@ -41,6 +41,11 @@ OUTPUT_FORMATS = {
     "apple": ".svg",
 }
 
+DEFAULT_FILL = 0
+DEFAULT_WEIGHT = 400
+DEFAULT_GRADE = 0
+DEFAULT_ROUND = 50
+
 
 def fetch_metadata(force_refresh=False):
     """Fetch and cache icon metadata."""
@@ -87,15 +92,41 @@ def search_icons(metadata, query):
     return results
 
 
-def build_download_url(icon_name, style='outlined', size=24, output_format='xml'):
+def build_variant_axis_query(size=24, weight=DEFAULT_WEIGHT, fill=DEFAULT_FILL, grade=DEFAULT_GRADE, roundness=DEFAULT_ROUND):
+    """Build the Material Symbols axis query string."""
+    return f"var=opsz,wght,FILL,GRAD,ROND@{size},{weight},{fill},{grade},{roundness}"
+
+
+def uses_default_axes(fill=DEFAULT_FILL, weight=DEFAULT_WEIGHT, grade=DEFAULT_GRADE):
+    """Return True when the requested axes match the plain default asset."""
+    return fill == DEFAULT_FILL and weight == DEFAULT_WEIGHT and grade == DEFAULT_GRADE
+
+
+def build_download_url(
+    icon_name,
+    style='outlined',
+    size=24,
+    output_format='xml',
+    fill=DEFAULT_FILL,
+    weight=DEFAULT_WEIGHT,
+    grade=DEFAULT_GRADE,
+):
     """Build the download URL for the requested icon format."""
     style_folder = MATERIAL_SYMBOLS_STYLES.get(style, 'materialsymbolsoutlined')
+    axis_query = build_variant_axis_query(size=size, weight=weight, fill=fill, grade=grade)
 
     if output_format == 'compose':
         family = COMPOSE_STYLE_FAMILIES.get(style, 'Material+Symbols+Outlined')
         return (
             f"https://fonts.gstatic.com/render/v1/{family}/{size}dp/{icon_name}.kt"
-            f"?var=opsz,wght,FILL,GRAD,ROND@{size},400,0,0,50"
+            f"?{axis_query}"
+        )
+
+    if output_format == 'xml' and not uses_default_axes(fill=fill, weight=weight, grade=grade):
+        family = COMPOSE_STYLE_FAMILIES.get(style, 'Material+Symbols+Outlined')
+        return (
+            f"https://fonts.gstatic.com/render/v1/{family}/{size}dp/{icon_name}.xml"
+            f"?{axis_query}"
         )
 
     extension = OUTPUT_FORMATS.get(output_format, '.xml').lstrip('.')
@@ -116,17 +147,41 @@ def read_text_response(response):
     return content.decode('utf-8')
 
 
-def download_material_symbols(icon_name, style='outlined', size=24, output_path=None, output_format='xml'):
+def download_material_symbols(
+    icon_name,
+    style='outlined',
+    size=24,
+    output_path=None,
+    output_format='xml',
+    fill=DEFAULT_FILL,
+    weight=DEFAULT_WEIGHT,
+    grade=DEFAULT_GRADE,
+):
     """Download a Material Symbol in the requested format."""
+
+    if output_format == 'apple' and not uses_default_axes(fill=fill, weight=weight, grade=grade):
+        print(
+            "Apple SVG only supports the default Google asset. "
+            "Custom --fill, --weight, and --grade are not available for this format.",
+            file=sys.stderr,
+        )
+        return False
 
     url = build_download_url(
         icon_name=icon_name,
         style=style,
         size=size,
         output_format=output_format,
+        fill=fill,
+        weight=weight,
+        grade=grade,
     )
 
-    print(f"Downloading: {icon_name} (Material Symbols, {style}, {size}px, {output_format})", file=sys.stderr)
+    print(
+        f"Downloading: {icon_name} (Material Symbols, {style}, {size}px, {output_format}, "
+        f"fill={fill}, weight={weight}, grade={grade})",
+        file=sys.stderr,
+    )
     print(f"URL: {url}", file=sys.stderr)
 
     try:
@@ -205,6 +260,25 @@ def main():
         help='Output format: xml, compose, or apple (SVG) (default: xml)'
     )
     parser.add_argument(
+        '--fill',
+        type=int,
+        choices=[0, 1],
+        default=DEFAULT_FILL,
+        help='Fill axis: 0 for outlined, 1 for filled (default: 0)'
+    )
+    parser.add_argument(
+        '--weight',
+        type=int,
+        default=DEFAULT_WEIGHT,
+        help='Weight axis, for example 100..700 (default: 400)'
+    )
+    parser.add_argument(
+        '--grade',
+        type=int,
+        default=DEFAULT_GRADE,
+        help='Grade axis, for example -25, 0, 200 (default: 0)'
+    )
+    parser.add_argument(
         '-o', '--output',
         type=str,
         help='Output file path (default: ic_<name>.<ext>)'
@@ -216,6 +290,12 @@ def main():
     )
 
     args = parser.parse_args()
+
+    if not 100 <= args.weight <= 700:
+        parser.error('--weight must be between 100 and 700')
+
+    if not -25 <= args.grade <= 200:
+        parser.error('--grade must be between -25 and 200')
 
     if args.search:
         # Search mode
@@ -243,6 +323,9 @@ def main():
             size=args.size,
             output_path=args.output,
             output_format=args.format,
+            fill=args.fill,
+            weight=args.weight,
+            grade=args.grade,
         )
         sys.exit(0 if success else 1)
 
