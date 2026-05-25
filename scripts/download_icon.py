@@ -97,6 +97,27 @@ def build_variant_axis_query(size=24, weight=DEFAULT_WEIGHT, fill=DEFAULT_FILL, 
     return f"var=opsz,wght,FILL,GRAD,ROND@{size},{weight},{fill},{grade},{roundness}"
 
 
+def format_xml_grade_segment(grade):
+    """Format the XML grade segment used in Google Fonts variant paths."""
+    if grade < 0:
+        return f"gradN{abs(grade)}"
+    return f"grad{grade}"
+
+
+def build_xml_variant_folder(weight=DEFAULT_WEIGHT, fill=DEFAULT_FILL, grade=DEFAULT_GRADE):
+    """Build the Google Fonts XML variant folder name."""
+    parts = []
+
+    if weight != DEFAULT_WEIGHT:
+        parts.append(f"wght{weight}")
+    if grade != DEFAULT_GRADE:
+        parts.append(format_xml_grade_segment(grade))
+    if fill != DEFAULT_FILL:
+        parts.append(f"fill{fill}")
+
+    return ''.join(parts)
+
+
 def uses_default_axes(fill=DEFAULT_FILL, weight=DEFAULT_WEIGHT, grade=DEFAULT_GRADE):
     """Return True when the requested axes match the plain default asset."""
     return fill == DEFAULT_FILL and weight == DEFAULT_WEIGHT and grade == DEFAULT_GRADE
@@ -123,10 +144,10 @@ def build_download_url(
         )
 
     if output_format == 'xml' and not uses_default_axes(fill=fill, weight=weight, grade=grade):
-        family = COMPOSE_STYLE_FAMILIES.get(style, 'Material+Symbols+Outlined')
+        variant_folder = build_xml_variant_folder(weight=weight, fill=fill, grade=grade)
         return (
-            f"https://fonts.gstatic.com/render/v1/{family}/{size}dp/{icon_name}.xml"
-            f"?{axis_query}"
+            f"https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/"
+            f"{icon_name}/{variant_folder}/{size}px.xml"
         )
 
     extension = OUTPUT_FORMATS.get(output_format, '.xml').lstrip('.')

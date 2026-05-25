@@ -153,7 +153,7 @@ When downloading icons:
 
 - The script caches metadata in the system temporary directory for faster subsequent searches
 - Metadata is fetched from `http://fonts.google.com/metadata/icons`
-- XML icons use the default Google asset URL for default axes and switch to the `render/v1` endpoint for custom `fill`, `weight`, or `grade`
+- XML icons use the default Google asset URL for default axes and switch to the Google variant path `.../{icon}/{variant}/{size}px.xml` for custom `fill`, `weight`, or `grade`
 - Compose icons are downloaded from `https://fonts.gstatic.com/render/v1/Material+Symbols+{Style}/{size}dp/{icon}.kt?...`
 - Apple SVG icons are downloaded from `https://fonts.gstatic.com/s/i/short-term/release/{style}/{icon}/default/{size}px.svg`
 - Apple SVG currently supports only the default Google asset, so custom `--fill`, `--weight`, and `--grade` are rejected for that format
@@ -164,7 +164,7 @@ When downloading icons:
 Icons are downloaded using these patterns:
 ```
 https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/default/{size}px.xml
-https://fonts.gstatic.com/render/v1/{compose_family}/{size}dp/{icon_name}.xml?var=opsz,wght,FILL,GRAD,ROND@{size},{weight},{fill},{grade},50
+https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/{variant_segments}/{size}px.xml
 https://fonts.gstatic.com/render/v1/{compose_family}/{size}dp/{icon_name}.kt?var=opsz,wght,FILL,GRAD,ROND@{size},400,0,0,50
 https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/default/{size}px.svg
 ```
@@ -178,3 +178,8 @@ And `compose_family` is one of:
 - `Material+Symbols+Outlined`
 - `Material+Symbols+Rounded`
 - `Material+Symbols+Sharp`
+
+For XML variant folders:
+- only non-default axis segments are included
+- negative grades are encoded with `N`, for example `gradN25`
+- examples: `fill1`, `wght700`, `grad200`, `wght700grad200fill1`
