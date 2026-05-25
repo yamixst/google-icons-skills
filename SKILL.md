@@ -25,22 +25,22 @@ The script works on **Linux, macOS, and Windows**.
 
 ### Search for Icons
 ```bash
-python .opencode/skills/google-icons/scripts/download_icon.py --search home
+python scripts/download_icon.py --search home
 ```
 
 ### Download an Icon
 ```bash
-python .opencode/skills/google-icons/scripts/download_icon.py --name home --output app/src/main/res/drawable/ic_home.xml
+python scripts/download_icon.py --name home --output app/src/main/res/drawable/ic_home.xml
 ```
 
 ### Download a Compose Icon
 ```bash
-python .opencode/skills/google-icons/scripts/download_icon.py --name toggle_on --style sharp --format compose --output ToggleOn.kt
+python scripts/download_icon.py --name toggle_on --style sharp --format compose --output ToggleOn.kt
 ```
 
 ### Download an Apple SVG
 ```bash
-python .opencode/skills/google-icons/scripts/download_icon.py --name toggle_on --style sharp --format apple --output toggle_on.svg
+python scripts/download_icon.py --name toggle_on --style sharp --format apple --output toggle_on.svg
 ```
 
 ## Script Parameters
@@ -60,29 +60,29 @@ python .opencode/skills/google-icons/scripts/download_icon.py --name toggle_on -
 ### Search Icons
 ```bash
 # Find icons containing "home"
-python .opencode/skills/google-icons/scripts/download_icon.py --search home
+python scripts/download_icon.py --search home
 
 # Find icons containing "settings"
-python .opencode/skills/google-icons/scripts/download_icon.py --search settings
+python scripts/download_icon.py --search settings
 ```
 
 ### Download Icons
 
 ```bash
 # Basic download (outlined, 24px) - produces XML
-python .opencode/skills/google-icons/scripts/download_icon.py --name home --output app/src/main/res/drawable/ic_home.xml
+python scripts/download_icon.py --name home --output app/src/main/res/drawable/ic_home.xml
 
 # Rounded style
-python .opencode/skills/google-icons/scripts/download_icon.py --name settings --style rounded --output app/src/main/res/drawable/ic_settings.xml
+python scripts/download_icon.py --name settings --style rounded --output app/src/main/res/drawable/ic_settings.xml
 
 # Sharp style with custom size
-python .opencode/skills/google-icons/scripts/download_icon.py --name delete --style sharp --size 48 --output app/src/main/res/drawable/ic_delete_48.xml
+python scripts/download_icon.py --name delete --style sharp --size 48 --output app/src/main/res/drawable/ic_delete_48.xml
 
 # Android Compose Kotlin source
-python .opencode/skills/google-icons/scripts/download_icon.py --name toggle_on --style sharp --format compose --output app/src/main/java/icons/ToggleOn.kt
+python scripts/download_icon.py --name toggle_on --style sharp --format compose --output app/src/main/java/icons/ToggleOn.kt
 
 # Apple SVG asset
-python .opencode/skills/google-icons/scripts/download_icon.py --name toggle_on --style sharp --format apple --output Assets/toggle_on.svg
+python scripts/download_icon.py --name toggle_on --style sharp --format apple --output Assets/toggle_on.svg
 ```
 
 ## Using Downloaded Icons in Android
