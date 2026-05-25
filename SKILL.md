@@ -1,11 +1,11 @@
 ---
 name: google-icons
-description: Download Material Symbols icons from Google Fonts as Android Vector Drawable XML. Search icons by name, multiple styles supported (outlined, rounded, sharp).
+description: Download Material Symbols icons from Google Fonts as Android Vector Drawable XML, Android Compose Kotlin, or Apple-friendly SVG. Search icons by name, multiple styles supported (outlined, rounded, sharp).
 ---
 
 # Google Icons Skill
 
-This skill provides tools to search and download Material Symbols icons from Google Fonts for Android development. Icons are downloaded directly as Android Vector Drawable XML format.
+This skill provides tools to search and download Material Symbols icons from Google Fonts for Android and Apple development. Icons can be downloaded as Android Vector Drawable XML, Android Compose Kotlin, or SVG.
 
 ## Overview
 
@@ -14,7 +14,12 @@ Material Symbols are Google's modern icon set, available in three styles:
 - **Rounded**: Soft, rounded corners
 - **Sharp**: Angular, precise edges
 
-Icons are downloaded directly as **Android Vector Drawable XML**, ready to use in your project immediately.
+Supported download formats:
+- **Android XML**: Android Vector Drawable XML, ready to use in `res/drawable`
+- **Android Compose**: Kotlin `ImageVector` source file
+- **Apple**: SVG asset suitable for Apple platform workflows
+
+The script works on **Linux, macOS, and Windows**.
 
 ## Quick Start
 
@@ -28,6 +33,16 @@ python .opencode/skills/google-icons/scripts/download_icon.py --search home
 python .opencode/skills/google-icons/scripts/download_icon.py --name home --output app/src/main/res/drawable/ic_home.xml
 ```
 
+### Download a Compose Icon
+```bash
+python .opencode/skills/google-icons/scripts/download_icon.py --name toggle_on --style sharp --format compose --output ToggleOn.kt
+```
+
+### Download an Apple SVG
+```bash
+python .opencode/skills/google-icons/scripts/download_icon.py --name toggle_on --style sharp --format apple --output toggle_on.svg
+```
+
 ## Script Parameters
 
 | Parameter | Short | Description | Default |
@@ -36,7 +51,8 @@ python .opencode/skills/google-icons/scripts/download_icon.py --name home --outp
 | `--name` | `-n` | Icon name to download | - |
 | `--style` | `-s` | Icon style: `outlined`, `rounded`, `sharp` | `outlined` |
 | `--size` | `-sz` | Size in px: `18`, `20`, `24`, `36`, `48` | `24` |
-| `--output` | `-o` | Output file path (default: `ic_<name>.xml`) | `./ic_<name>.xml` |
+| `--format` | `-f` | Output format: `xml`, `compose`, `apple` | `xml` |
+| `--output` | `-o` | Output file path (default: `ic_<name>.<ext>`) | `./ic_<name>.<ext>` |
 | `--refresh` | - | Force refresh metadata cache | `False` |
 
 ## Usage Examples
@@ -50,7 +66,7 @@ python .opencode/skills/google-icons/scripts/download_icon.py --search home
 python .opencode/skills/google-icons/scripts/download_icon.py --search settings
 ```
 
-### Download Icons (XML format - ready to use)
+### Download Icons
 
 ```bash
 # Basic download (outlined, 24px) - produces XML
@@ -62,13 +78,16 @@ python .opencode/skills/google-icons/scripts/download_icon.py --name settings --
 # Sharp style with custom size
 python .opencode/skills/google-icons/scripts/download_icon.py --name delete --style sharp --size 48 --output app/src/main/res/drawable/ic_delete_48.xml
 
-# Filled variant (uses filled=true in vector)
-python .opencode/skills/google-icons/scripts/download_icon.py --name favorite --output app/src/main/res/drawable/ic_favorite.xml
+# Android Compose Kotlin source
+python .opencode/skills/google-icons/scripts/download_icon.py --name toggle_on --style sharp --format compose --output app/src/main/java/icons/ToggleOn.kt
+
+# Apple SVG asset
+python .opencode/skills/google-icons/scripts/download_icon.py --name toggle_on --style sharp --format apple --output Assets/toggle_on.svg
 ```
 
 ## Using Downloaded Icons in Android
 
-Icons are ready to use immediately as Android Vector Drawables:
+Icons downloaded with `--format xml` are ready to use immediately as Android Vector Drawables:
 
 ```kotlin
 // In Compose
@@ -112,27 +131,37 @@ Material Symbols are optimized for these sizes:
 
 ## Icon Naming Convention
 
-When downloading icons for Android:
+When downloading icons:
 - Use `ic_` prefix for icon files (e.g., `ic_home.xml`)
 - Consider adding style suffix for non-default styles (e.g., `ic_home_rounded.xml`)
 - Consider adding size suffix for non-standard sizes (e.g., `ic_home_48.xml`)
+- Compose files are usually better with PascalCase filenames (e.g., `Home.kt`)
+- Apple SVG assets can keep the icon name directly (e.g., `toggle_on.svg`)
 
 ## Notes
 
-- The script caches metadata in `/tmp/opencode/google_icons_metadata.json` for faster subsequent searches
+- The script caches metadata in the system temporary directory for faster subsequent searches
 - Metadata is fetched from `http://fonts.google.com/metadata/icons`
-- Icons are downloaded from `https://fonts.gstatic.com/s/i/short-term/release/{style}/{icon}/default/{size}px.xml`
-- All downloaded icons are Android Vector Drawable XML format, ready to use immediately
-- No conversion needed - icons work directly in Android projects
+- XML icons are downloaded from `https://fonts.gstatic.com/s/i/short-term/release/{style}/{icon}/default/{size}px.xml`
+- Compose icons are downloaded from `https://fonts.gstatic.com/render/v1/Material+Symbols+{Style}/{size}dp/{icon}.kt?...`
+- Apple SVG icons are downloaded from `https://fonts.gstatic.com/s/i/short-term/release/{style}/{icon}/default/{size}px.svg`
+- The script uses only Python standard library modules and is portable across Linux, macOS, and Windows
 
 ## URL Pattern
 
-Icons are downloaded using this pattern:
+Icons are downloaded using these patterns:
 ```
 https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/default/{size}px.xml
+https://fonts.gstatic.com/render/v1/{compose_family}/{size}dp/{icon_name}.kt?var=opsz,wght,FILL,GRAD,ROND@{size},400,0,0,50
+https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/default/{size}px.svg
 ```
 
 Where `style_folder` is one of:
 - `materialsymbolsoutlined` (for outlined style)
 - `materialsymbolsrounded` (for rounded style)
 - `materialsymbolssharp` (for sharp style)
+
+And `compose_family` is one of:
+- `Material+Symbols+Outlined`
+- `Material+Symbols+Rounded`
+- `Material+Symbols+Sharp`

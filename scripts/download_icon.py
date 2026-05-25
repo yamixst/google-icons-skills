@@ -10,14 +10,16 @@ Usage:
 """
 
 import argparse
+import gzip
 import json
 import sys
+import tempfile
 import urllib.request
 import urllib.error
 from pathlib import Path
 
 METADATA_URL = "http://fonts.google.com/metadata/icons?incomplete=1&key=material_symbols"
-CACHE_DIR = Path("/tmp/google-fonts")
+CACHE_DIR = Path(tempfile.gettempdir()) / "google-fonts"
 CACHE_FILE = CACHE_DIR / "google_icons_metadata.json"
 
 # Material Symbols style mapping
@@ -25,6 +27,18 @@ MATERIAL_SYMBOLS_STYLES = {
     "outlined": "materialsymbolsoutlined",
     "rounded": "materialsymbolsrounded",
     "sharp": "materialsymbolssharp",
+}
+
+COMPOSE_STYLE_FAMILIES = {
+    "outlined": "Material+Symbols+Outlined",
+    "rounded": "Material+Symbols+Rounded",
+    "sharp": "Material+Symbols+Sharp",
+}
+
+OUTPUT_FORMATS = {
+    "xml": ".xml",
+    "compose": ".kt",
+    "apple": ".svg",
 }
 
 
@@ -73,16 +87,46 @@ def search_icons(metadata, query):
     return results
 
 
-def download_material_symbols(icon_name, style='outlined', size=24, output_path=None):
-    """Download a Material Symbol as Android Vector Drawable XML."""
-
-    # Get style folder name for URL
+def build_download_url(icon_name, style='outlined', size=24, output_format='xml'):
+    """Build the download URL for the requested icon format."""
     style_folder = MATERIAL_SYMBOLS_STYLES.get(style, 'materialsymbolsoutlined')
 
-    # Build URL - correct pattern for Material Symbols XML
-    url = f"https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/default/{size}px.xml"
+    if output_format == 'compose':
+        family = COMPOSE_STYLE_FAMILIES.get(style, 'Material+Symbols+Outlined')
+        return (
+            f"https://fonts.gstatic.com/render/v1/{family}/{size}dp/{icon_name}.kt"
+            f"?var=opsz,wght,FILL,GRAD,ROND@{size},400,0,0,50"
+        )
 
-    print(f"Downloading: {icon_name} (Material Symbols, {style}, {size}px)", file=sys.stderr)
+    extension = OUTPUT_FORMATS.get(output_format, '.xml').lstrip('.')
+    return (
+        f"https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/"
+        f"{icon_name}/default/{size}px.{extension}"
+    )
+
+
+def read_text_response(response):
+    """Read an HTTP response body as UTF-8 text, handling gzip when present."""
+    content = response.read()
+    content_encoding = response.headers.get('Content-Encoding', '').lower()
+
+    if content_encoding == 'gzip' or content[:2] == b'\x1f\x8b':
+        content = gzip.decompress(content)
+
+    return content.decode('utf-8')
+
+
+def download_material_symbols(icon_name, style='outlined', size=24, output_path=None, output_format='xml'):
+    """Download a Material Symbol in the requested format."""
+
+    url = build_download_url(
+        icon_name=icon_name,
+        style=style,
+        size=size,
+        output_format=output_format,
+    )
+
+    print(f"Downloading: {icon_name} (Material Symbols, {style}, {size}px, {output_format})", file=sys.stderr)
     print(f"URL: {url}", file=sys.stderr)
 
     try:
@@ -91,15 +135,16 @@ def download_material_symbols(icon_name, style='outlined', size=24, output_path=
             headers={'User-Agent': 'Mozilla/5.0'}
         )
         with urllib.request.urlopen(req, timeout=30) as response:
-            content = response.read().decode('utf-8')
+            content = read_text_response(response)
 
             # Determine output path
+            output_suffix = OUTPUT_FORMATS.get(output_format, '.xml')
             if output_path is None:
-                output_file = Path(f"ic_{icon_name}.xml")
+                output_file = Path(f"ic_{icon_name}{output_suffix}")
             else:
                 output_file = Path(output_path)
-                if output_file.suffix not in ['.xml']:
-                    output_file = output_file.with_suffix('.xml')
+                if output_file.suffix != output_suffix:
+                    output_file = output_file.with_suffix(output_suffix)
 
             # Ensure output directory exists
             output_file.parent.mkdir(parents=True, exist_ok=True)
@@ -113,7 +158,7 @@ def download_material_symbols(icon_name, style='outlined', size=24, output_path=
     except urllib.error.HTTPError as e:
         print(f"HTTP Error {e.code}: {e.reason}", file=sys.stderr)
         if e.code == 404:
-            print(f"Icon '{icon_name}' not found in '{style}' style.", file=sys.stderr)
+            print(f"Icon '{icon_name}' not found for format '{output_format}' in '{style}' style.", file=sys.stderr)
             print(f"Available styles: {', '.join(MATERIAL_SYMBOLS_STYLES.keys())}", file=sys.stderr)
         return False
     except (urllib.error.URLError, IOError) as e:
@@ -123,7 +168,7 @@ def download_material_symbols(icon_name, style='outlined', size=24, output_path=
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Download Material Symbols icons from Google Fonts for Android projects.'
+        description='Download Material Symbols icons from Google Fonts in XML, Compose, or SVG formats.'
     )
 
     group = parser.add_mutually_exclusive_group(required=True)
@@ -153,9 +198,16 @@ def main():
         help='Icon size in pixels (default: 24)'
     )
     parser.add_argument(
+        '-f', '--format',
+        type=str,
+        choices=['xml', 'compose', 'apple'],
+        default='xml',
+        help='Output format: xml, compose, or apple (SVG) (default: xml)'
+    )
+    parser.add_argument(
         '-o', '--output',
         type=str,
-        help='Output file path (default: ic_<name>.xml)'
+        help='Output file path (default: ic_<name>.<ext>)'
     )
     parser.add_argument(
         '--refresh',
@@ -165,11 +217,9 @@ def main():
 
     args = parser.parse_args()
 
-    # Fetch metadata
-    metadata = fetch_metadata(force_refresh=args.refresh)
-
     if args.search:
         # Search mode
+        metadata = fetch_metadata(force_refresh=args.refresh)
         results = search_icons(metadata, args.search)
         if not results:
             print(f"No icons found matching '{args.search}'.")
@@ -191,7 +241,8 @@ def main():
             icon_name=args.name,
             style=args.style,
             size=args.size,
-            output_path=args.output
+            output_path=args.output,
+            output_format=args.format,
         )
         sys.exit(0 if success else 1)
 
