@@ -37,6 +37,7 @@ COMPOSE_STYLE_FAMILIES = {
 
 OUTPUT_FORMATS = {
     "xml": ".xml",
+    "svg": ".svg",
     "compose": ".kt",
     "apple": ".svg",
 }
@@ -118,6 +119,11 @@ def build_xml_variant_folder(weight=DEFAULT_WEIGHT, fill=DEFAULT_FILL, grade=DEF
     return ''.join(parts)
 
 
+def build_asset_variant_folder(weight=DEFAULT_WEIGHT, fill=DEFAULT_FILL, grade=DEFAULT_GRADE):
+    """Build the Google Fonts variant folder name for XML and SVG assets."""
+    return build_xml_variant_folder(weight=weight, fill=fill, grade=grade)
+
+
 def uses_default_axes(fill=DEFAULT_FILL, weight=DEFAULT_WEIGHT, grade=DEFAULT_GRADE):
     """Return True when the requested axes match the plain default asset."""
     return fill == DEFAULT_FILL and weight == DEFAULT_WEIGHT and grade == DEFAULT_GRADE
@@ -143,11 +149,12 @@ def build_download_url(
             f"?{axis_query}"
         )
 
-    if output_format == 'xml' and not uses_default_axes(fill=fill, weight=weight, grade=grade):
-        variant_folder = build_xml_variant_folder(weight=weight, fill=fill, grade=grade)
+    if output_format in {'xml', 'svg'} and not uses_default_axes(fill=fill, weight=weight, grade=grade):
+        variant_folder = build_asset_variant_folder(weight=weight, fill=fill, grade=grade)
+        extension = OUTPUT_FORMATS.get(output_format, '.xml').lstrip('.')
         return (
             f"https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/"
-            f"{icon_name}/{variant_folder}/{size}px.xml"
+            f"{icon_name}/{variant_folder}/{size}px.{extension}"
         )
 
     extension = OUTPUT_FORMATS.get(output_format, '.xml').lstrip('.')
@@ -182,8 +189,8 @@ def download_material_symbols(
 
     if output_format == 'apple' and not uses_default_axes(fill=fill, weight=weight, grade=grade):
         print(
-            "Apple SVG only supports the default Google asset. "
-            "Custom --fill, --weight, and --grade are not available for this format.",
+            "The 'apple' alias only supports the default Google SVG asset. "
+            "Use --format svg for custom --fill, --weight, and --grade.",
             file=sys.stderr,
         )
         return False
@@ -276,9 +283,9 @@ def main():
     parser.add_argument(
         '-f', '--format',
         type=str,
-        choices=['xml', 'compose', 'apple'],
+        choices=['xml', 'svg', 'compose', 'apple'],
         default='xml',
-        help='Output format: xml, compose, or apple (SVG) (default: xml)'
+        help='Output format: xml, svg, compose, or apple (default: xml)'
     )
     parser.add_argument(
         '--fill',
