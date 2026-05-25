@@ -141,6 +141,8 @@ def build_download_url(
     """Build the download URL for the requested icon format."""
     style_folder = MATERIAL_SYMBOLS_STYLES.get(style, 'materialsymbolsoutlined')
     axis_query = build_variant_axis_query(size=size, weight=weight, fill=fill, grade=grade)
+    variant_folder = build_asset_variant_folder(weight=weight, fill=fill, grade=grade)
+    has_custom_axes = not uses_default_axes(fill=fill, weight=weight, grade=grade)
 
     if output_format == 'compose':
         family = COMPOSE_STYLE_FAMILIES.get(style, 'Material+Symbols+Outlined')
@@ -149,12 +151,34 @@ def build_download_url(
             f"?{axis_query}"
         )
 
-    if output_format in {'xml', 'svg'} and not uses_default_axes(fill=fill, weight=weight, grade=grade):
-        variant_folder = build_asset_variant_folder(weight=weight, fill=fill, grade=grade)
-        extension = OUTPUT_FORMATS.get(output_format, '.xml').lstrip('.')
+    if output_format == 'xml':
+        if has_custom_axes:
+            return (
+                f"https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/"
+                f"{icon_name}/{variant_folder}/{size}px.xml"
+            )
         return (
             f"https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/"
-            f"{icon_name}/{variant_folder}/{size}px.{extension}"
+            f"{icon_name}/default/{size}px.xml"
+        )
+
+    if output_format == 'svg':
+        if has_custom_axes:
+            return (
+                f"https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/"
+                f"{icon_name}/{variant_folder}/{size}px.svg"
+            )
+        return (
+            f"https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/"
+            f"{icon_name}/default/{size}px.svg"
+        )
+
+    if output_format == 'apple':
+        apple_variant_folder = variant_folder or 'default'
+        apple_file_suffix = f"{icon_name}_{apple_variant_folder}_symbol.svg"
+        return (
+            f"https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/"
+            f"{icon_name}/{apple_variant_folder}/{apple_file_suffix}"
         )
 
     extension = OUTPUT_FORMATS.get(output_format, '.xml').lstrip('.')
@@ -186,14 +210,6 @@ def download_material_symbols(
     grade=DEFAULT_GRADE,
 ):
     """Download a Material Symbol in the requested format."""
-
-    if output_format == 'apple' and not uses_default_axes(fill=fill, weight=weight, grade=grade):
-        print(
-            "The 'apple' alias only supports the default Google SVG asset. "
-            "Use --format svg for custom --fill, --weight, and --grade.",
-            file=sys.stderr,
-        )
-        return False
 
     url = build_download_url(
         icon_name=icon_name,

@@ -18,7 +18,7 @@ Supported download formats:
 - **Android XML**: Android Vector Drawable XML, ready to use in `res/drawable`
 - **SVG**: Standard SVG asset, including custom Fill, Weight, and Grade variants
 - **Android Compose**: Kotlin `ImageVector` source file
-- **Apple**: Compatibility alias for the default SVG asset
+- **Apple**: Google symbol SVG export using the `_symbol.svg` URL pattern
 
 Supported variable font axes:
 - **Fill**: `0` for outlined, `1` for filled
@@ -46,7 +46,7 @@ python scripts/download_icon.py --name toggle_on --style sharp --format compose 
 
 ### Download an Apple SVG
 ```bash
-python scripts/download_icon.py --name toggle_on --style sharp --format apple --output toggle_on.svg
+python scripts/download_icon.py --name toggle_on --style outlined --format apple --fill 1 --grade 200 --output toggle_on_symbol.svg
 ```
 
 ### Download a Variant SVG
@@ -101,8 +101,8 @@ python scripts/download_icon.py --name toggle_on --style sharp --format svg --fi
 # Android Compose Kotlin source
 python scripts/download_icon.py --name toggle_on --style sharp --format compose --fill 1 --weight 700 --grade 200 --output app/src/main/java/icons/ToggleOn.kt
 
-# Apple SVG alias (default axes only)
-python scripts/download_icon.py --name toggle_on --style sharp --format apple --output Assets/toggle_on.svg
+# Apple symbol SVG
+python scripts/download_icon.py --name toggle_on --style outlined --format apple --fill 1 --grade 200 --output Assets/toggle_on_symbol.svg
 ```
 
 ## Using Downloaded Icons in Android
@@ -165,8 +165,8 @@ When downloading icons:
 - XML icons use the default Google asset URL for default axes and switch to the Google variant path `.../{icon}/{variant}/{size}px.xml` for custom `fill`, `weight`, or `grade`
 - SVG icons use the default Google asset URL for default axes and switch to the Google variant path `.../{icon}/{variant}/{size}px.svg` for custom `fill`, `weight`, or `grade`
 - Compose icons are downloaded from `https://fonts.gstatic.com/render/v1/Material+Symbols+{Style}/{size}dp/{icon}.kt?...`
-- The `apple` format is a compatibility alias for the default SVG asset at `https://fonts.gstatic.com/s/i/short-term/release/{style}/{icon}/default/{size}px.svg`
-- Use `--format svg` when you need custom `--fill`, `--weight`, or `--grade` with an SVG output
+- Apple symbol SVGs are downloaded from `https://fonts.gstatic.com/s/i/short-term/release/{style}/{icon}/{variant}/{icon}_{variant}_symbol.svg`
+- The Apple `_symbol.svg` response is a Google symbol sheet, not the same single-icon asset returned by `--format svg`
 - The script uses only Python standard library modules and is portable across Linux, macOS, and Windows
 
 ## URL Pattern
@@ -178,6 +178,7 @@ https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/{var
 https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/default/{size}px.svg
 https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/{variant_segments}/{size}px.svg
 https://fonts.gstatic.com/render/v1/{compose_family}/{size}dp/{icon_name}.kt?var=opsz,wght,FILL,GRAD,ROND@{size},400,0,0,50
+https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/{variant_segments_or_default}/{icon_name}_{variant_segments_or_default}_symbol.svg
 ```
 
 Where `style_folder` is one of:
@@ -194,3 +195,7 @@ For XML and SVG variant folders:
 - only non-default axis segments are included
 - negative grades are encoded with `N`, for example `gradN25`
 - examples: `fill1`, `wght700`, `grad200`, `wght700grad200fill1`
+
+For Apple symbol SVGs:
+- the folder name is `default` for default axes, otherwise it uses the same variant segment naming
+- the file name repeats the icon and variant, for example `toggle_on_grad200fill1_symbol.svg`
