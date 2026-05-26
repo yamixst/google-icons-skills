@@ -174,8 +174,10 @@ def build_download_url(
         )
 
     if output_format == 'apple':
-        apple_variant_folder = variant_folder or 'default'
-        suffix = f"_{variant_folder}" if variant_folder else ""
+        # For apple format, weight is not applicable, so we ignore it by using DEFAULT_WEIGHT
+        apple_variant = build_asset_variant_folder(weight=DEFAULT_WEIGHT, fill=fill, grade=grade)
+        apple_variant_folder = apple_variant or 'default'
+        suffix = f"_{apple_variant}" if apple_variant else ""
         apple_file_suffix = f"{icon_name}{suffix}_symbol.svg"
         return (
             f"https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/"
