@@ -1,0 +1,13 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Design Assets",
+      "description": "Search and download Material Symbols in Android XML, SVG, Compose Kotlin, and Apple symbol SVG formats.",
+      "skills": [
+        "google-icons"
+      ]
+    }
+  ]
+}
