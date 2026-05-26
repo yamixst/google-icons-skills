@@ -1,4 +1,6 @@
-# Google Icons Skill
+# Google Icons Skills
+
+[![skills.sh](https://skills.sh/b/yamixst/google-icons-skills)](https://skills.sh/yamixst/google-icons-skills)
 
 Download Material Symbols icons from Google Fonts as Android XML, SVG, Compose Kotlin, or Apple symbol SVG.
 
@@ -41,7 +43,6 @@ python3 scripts/download_icon.py --name toggle_on --format apple --fill 1 --grad
 - Works on Linux, macOS, and Windows.
 - Uses only the Python standard library.
 - Skill instructions live in `SKILL.md` for agent consumption.
-- After publishing, you can add a `skills.sh` badge that points to your repository page.
 
 ## License
 
