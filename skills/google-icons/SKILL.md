@@ -22,8 +22,8 @@ Supported download formats:
 
 Supported variable font axes:
 - **Fill**: `0` for outlined, `1` for filled
-- **Weight**: `100` to `700`
-- **Grade**: `-25` to `200`
+- **Weight**: Discrete values `100`, `200`, `300`, `400`, `500`, `600`, `700`
+- **Grade**: Discrete values `-25`, `0`, `200`
 
 The script works on **Linux, macOS, and Windows**.
 
@@ -31,27 +31,27 @@ The script works on **Linux, macOS, and Windows**.
 
 ### Search for Icons
 ```bash
-python scripts/download_icon.py --search home
+python3 scripts/download_icon.py --search home
 ```
 
 ### Download an Icon
 ```bash
-python scripts/download_icon.py --name home --output app/src/main/res/drawable/ic_home.xml
+python3 scripts/download_icon.py --name home --output app/src/main/res/drawable/ic_home.xml
 ```
 
 ### Download a Compose Icon
 ```bash
-python scripts/download_icon.py --name toggle_on --style sharp --format compose --fill 1 --weight 700 --grade 200 --output ToggleOn.kt
+python3 scripts/download_icon.py --name toggle_on --style sharp --format compose --fill 1 --weight 700 --grade 200 --output ToggleOn.kt
 ```
 
 ### Download an Apple SVG
 ```bash
-python scripts/download_icon.py --name toggle_on --style outlined --format apple --fill 1 --grade 200 --output toggle_on_symbol.svg
+python3 scripts/download_icon.py --name toggle_on --style outlined --format apple --fill 1 --grade 200 --output toggle_on_symbol.svg
 ```
 
 ### Download a Variant SVG
 ```bash
-python scripts/download_icon.py --name toggle_on --style sharp --format svg --fill 1 --weight 700 --grade 200 --output toggle_on.svg
+python3 scripts/download_icon.py --name toggle_on --style sharp --format svg --fill 1 --weight 700 --grade 200 --output toggle_on.svg
 ```
 
 ## Script Parameters
@@ -64,8 +64,8 @@ python scripts/download_icon.py --name toggle_on --style sharp --format svg --fi
 | `--size` | `-sz` | Size in px: `18`, `20`, `24`, `36`, `48` | `24` |
 | `--format` | `-f` | Output format: `xml`, `svg`, `compose`, `apple` | `xml` |
 | `--fill` | - | Fill axis: `0` or `1` | `0` |
-| `--weight` | - | Weight axis: `100` to `700` | `400` |
-| `--grade` | - | Grade axis: `-25` to `200` | `0` |
+| `--weight` | - | Weight axis choices: `100`, `200`, `300`, `400`, `500`, `600`, `700` | `400` |
+| `--grade` | - | Grade axis choices: `-25`, `0`, `200` | `0` |
 | `--output` | `-o` | Output file path (default: `ic_<name>.<ext>`) | `./ic_<name>.<ext>` |
 | `--refresh` | - | Force refresh metadata cache | `False` |
 
@@ -74,35 +74,35 @@ python scripts/download_icon.py --name toggle_on --style sharp --format svg --fi
 ### Search Icons
 ```bash
 # Find icons containing "home"
-python scripts/download_icon.py --search home
+python3 scripts/download_icon.py --search home
 
 # Find icons containing "settings"
-python scripts/download_icon.py --search settings
+python3 scripts/download_icon.py --search settings
 ```
 
 ### Download Icons
 
 ```bash
 # Basic download (outlined, 24px) - produces XML
-python scripts/download_icon.py --name home --output app/src/main/res/drawable/ic_home.xml
+python3 scripts/download_icon.py --name home --output app/src/main/res/drawable/ic_home.xml
 
 # Rounded style
-python scripts/download_icon.py --name settings --style rounded --output app/src/main/res/drawable/ic_settings.xml
+python3 scripts/download_icon.py --name settings --style rounded --output app/src/main/res/drawable/ic_settings.xml
 
 # Sharp style with custom size
-python scripts/download_icon.py --name delete --style sharp --size 48 --output app/src/main/res/drawable/ic_delete_48.xml
+python3 scripts/download_icon.py --name delete --style sharp --size 48 --output app/src/main/res/drawable/ic_delete_48.xml
 
 # Filled heavy XML variant
-python scripts/download_icon.py --name toggle_on --style sharp --fill 1 --weight 700 --grade 200 --output app/src/main/res/drawable/ic_toggle_on_filled.xml
+python3 scripts/download_icon.py --name toggle_on --style sharp --fill 1 --weight 700 --grade 200 --output app/src/main/res/drawable/ic_toggle_on_filled.xml
 
 # Filled heavy SVG variant
-python scripts/download_icon.py --name toggle_on --style sharp --format svg --fill 1 --weight 700 --grade 200 --output assets/toggle_on.svg
+python3 scripts/download_icon.py --name toggle_on --style sharp --format svg --fill 1 --weight 700 --grade 200 --output assets/toggle_on.svg
 
 # Android Compose Kotlin source
-python scripts/download_icon.py --name toggle_on --style sharp --format compose --fill 1 --weight 700 --grade 200 --output app/src/main/java/icons/ToggleOn.kt
+python3 scripts/download_icon.py --name toggle_on --style sharp --format compose --fill 1 --weight 700 --grade 200 --output app/src/main/java/icons/ToggleOn.kt
 
 # Apple symbol SVG
-python scripts/download_icon.py --name toggle_on --style outlined --format apple --fill 1 --grade 200 --output Assets/toggle_on_symbol.svg
+python3 scripts/download_icon.py --name toggle_on --style outlined --format apple --fill 1 --grade 200 --output Assets/toggle_on_symbol.svg
 ```
 
 ## Using Downloaded Icons in Android
@@ -160,8 +160,8 @@ When downloading icons:
 
 ## Notes
 
-- The script caches metadata in the system temporary directory for faster subsequent searches
-- Metadata is fetched from `http://fonts.google.com/metadata/icons`
+- The script caches metadata in a user-specific system temporary directory (`google-fonts-<username>`) to avoid permission conflicts on multi-user systems.
+- Metadata is fetched from `https://fonts.google.com/metadata/icons`
 - XML icons use the default Google asset URL for default axes and switch to the Google variant path `.../{icon}/{variant}/{size}px.xml` for custom `fill`, `weight`, or `grade`
 - SVG icons use the default Google asset URL for default axes and switch to the Google variant path `.../{icon}/{variant}/{size}px.svg` for custom `fill`, `weight`, or `grade`
 - Compose icons are downloaded from `https://fonts.gstatic.com/render/v1/Material+Symbols+{Style}/{size}dp/{icon}.kt?...`
@@ -178,7 +178,7 @@ https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/{var
 https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/default/{size}px.svg
 https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/{variant_segments}/{size}px.svg
 https://fonts.gstatic.com/render/v1/{compose_family}/{size}dp/{icon_name}.kt?var=opsz,wght,FILL,GRAD,ROND@{size},400,0,0,50
-https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/{variant_segments_or_default}/{icon_name}_{variant_segments_or_default}_symbol.svg
+https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/{icon_name}/{variant_folder_or_default}/{icon_name}{suffix}_symbol.svg
 ```
 
 Where `style_folder` is one of:
@@ -198,4 +198,4 @@ For XML and SVG variant folders:
 
 For Apple symbol SVGs:
 - the folder name is `default` for default axes, otherwise it uses the same variant segment naming
-- the file name repeats the icon and variant, for example `toggle_on_grad200fill1_symbol.svg`
+- the file name repeats the icon name, followed by `_{variant}` if custom axes are used, and ends with `_symbol.svg` (e.g. `toggle_on_symbol.svg` or `toggle_on_grad200fill1_symbol.svg`)

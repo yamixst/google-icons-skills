@@ -295,14 +295,14 @@ def main():
     )
 
     parser.add_argument(
-        '--style',
+        '-s', '--style',
         type=str,
         choices=['outlined', 'rounded', 'sharp'],
         default='outlined',
         help='Icon style (default: outlined)'
     )
     parser.add_argument(
-        '--size',
+        '-sz', '--size',
         type=int,
         choices=[18, 20, 24, 36, 48],
         default=24,
