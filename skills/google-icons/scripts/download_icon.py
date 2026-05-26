@@ -175,7 +175,8 @@ def build_download_url(
 
     if output_format == 'apple':
         apple_variant_folder = variant_folder or 'default'
-        apple_file_suffix = f"{icon_name}_{apple_variant_folder}_symbol.svg"
+        suffix = f"_{variant_folder}" if variant_folder else ""
+        apple_file_suffix = f"{icon_name}{suffix}_symbol.svg"
         return (
             f"https://fonts.gstatic.com/s/i/short-term/release/{style_folder}/"
             f"{icon_name}/{apple_variant_folder}/{apple_file_suffix}"
