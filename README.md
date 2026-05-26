@@ -5,10 +5,8 @@ Download Material Symbols icons from Google Fonts as Android XML, SVG, Compose K
 ## Install
 
 ```bash
-npx skills@latest add <owner>/<repo>
+npx skills@latest add yamixst/google-icons-skills
 ```
-
-Replace `<owner>/<repo>` with the GitHub repository that contains this skill.
 
 ## Skill
 
@@ -31,11 +29,11 @@ scripts/download_icon.py
 ## Example Commands
 
 ```bash
-python scripts/download_icon.py --search toggle_on
-python scripts/download_icon.py --name toggle_on --format xml --output ic_toggle_on.xml
-python scripts/download_icon.py --name toggle_on --format svg --fill 1 --weight 700 --grade 200 --output toggle_on.svg
-python scripts/download_icon.py --name toggle_on --format compose --fill 1 --weight 700 --grade 200 --output ToggleOn.kt
-python scripts/download_icon.py --name toggle_on --format apple --fill 1 --grade 200 --output toggle_on_symbol.svg
+python3 scripts/download_icon.py --search toggle_on
+python3 scripts/download_icon.py --name toggle_on --format xml --output ic_toggle_on.xml
+python3 scripts/download_icon.py --name toggle_on --format svg --fill 1 --weight 700 --grade 200 --output toggle_on.svg
+python3 scripts/download_icon.py --name toggle_on --format compose --fill 1 --weight 700 --grade 200 --output ToggleOn.kt
+python3 scripts/download_icon.py --name toggle_on --format apple --fill 1 --grade 200 --output toggle_on_symbol.svg
 ```
 
 ## Notes
@@ -44,3 +42,7 @@ python scripts/download_icon.py --name toggle_on --format apple --fill 1 --grade
 - Uses only the Python standard library.
 - Skill instructions live in `SKILL.md` for agent consumption.
 - After publishing, you can add a `skills.sh` badge that points to your repository page.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
