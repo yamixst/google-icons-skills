@@ -10,6 +10,7 @@ Usage:
 """
 
 import argparse
+import getpass
 import gzip
 import json
 import sys
@@ -18,8 +19,8 @@ import urllib.request
 import urllib.error
 from pathlib import Path
 
-METADATA_URL = "http://fonts.google.com/metadata/icons?incomplete=1&key=material_symbols"
-CACHE_DIR = Path(tempfile.gettempdir()) / "google-fonts"
+METADATA_URL = "https://fonts.google.com/metadata/icons?incomplete=1&key=material_symbols"
+CACHE_DIR = Path(tempfile.gettempdir()) / f"google-fonts-{getpass.getuser()}"
 CACHE_FILE = CACHE_DIR / "google_icons_metadata.json"
 
 # Material Symbols style mapping
@@ -68,13 +69,21 @@ def fetch_metadata(force_refresh=False):
         with urllib.request.urlopen(req, timeout=30) as response:
             content = response.read().decode('utf-8')
             # Remove the )]}' prefix if present
-            if content.startswith(")]}'"):
-                content = content[5:]
+            prefix = ")]}'"
+            if content.startswith(prefix):
+                content = content[len(prefix):].lstrip()
             metadata = json.loads(content)
             with open(CACHE_FILE, 'w', encoding='utf-8') as f:
                 json.dump(metadata, f, indent=2)
             return metadata
     except (urllib.error.URLError, json.JSONDecodeError, IOError) as e:
+        if CACHE_FILE.exists():
+            print(f"Warning: Failed to fetch metadata ({e}). Falling back to cached version.", file=sys.stderr)
+            try:
+                with open(CACHE_FILE, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, IOError):
+                pass
         print(f"Error fetching metadata: {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -316,14 +325,16 @@ def main():
     parser.add_argument(
         '--weight',
         type=int,
+        choices=[100, 200, 300, 400, 500, 600, 700],
         default=DEFAULT_WEIGHT,
-        help='Weight axis, for example 100..700 (default: 400)'
+        help='Weight axis: 100, 200, 300, 400, 500, 600, 700 (default: 400)'
     )
     parser.add_argument(
         '--grade',
         type=int,
+        choices=[-25, 0, 200],
         default=DEFAULT_GRADE,
-        help='Grade axis, for example -25, 0, 200 (default: 0)'
+        help='Grade axis: -25, 0, 200 (default: 0)'
     )
     parser.add_argument(
         '-o', '--output',
@@ -337,12 +348,6 @@ def main():
     )
 
     args = parser.parse_args()
-
-    if not 100 <= args.weight <= 700:
-        parser.error('--weight must be between 100 and 700')
-
-    if not -25 <= args.grade <= 200:
-        parser.error('--grade must be between -25 and 200')
 
     if args.search:
         # Search mode
